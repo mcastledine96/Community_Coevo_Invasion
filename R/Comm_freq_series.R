@@ -10,7 +10,9 @@ library(lme4)
 
 #Read in data
 
-Commdata <- read.csv("Comm_freq_series.csv", stringsAsFactors = FALSE)
+Commdata <- read.csv("Comm_freq_series.csv", stringsAsFactors = FALSE, fileEncoding="UTF-8-BOM")
+
+names(Commdata)
 
 #Convert colony counts to CFUs/mL. 10^-5, 60ul plated
 #Density_CFU = CFU per mL = Count*Dilution*ML
@@ -60,17 +62,54 @@ Commplot <- ggplot(Commdata_seq, aes(x= forcats::fct_reorder(Time, Sp), y= Rel_f
   scale_color_discrete("Sp") +
   facet_wrap(~Comm) +
   xlab("Time point") +
-  ylab("Species relative frequency")
+  ylab("Species proportion in community")
 
 Commplot
 
 #variation between communities by species frequency
 
+#mosaic plot
 Sp_plot <- ggplot(Commdata_seq, aes(x= Comm, y= Rel_freq), na.rm=T) +
   geom_col(aes(fill=Sp)) +
   facet_wrap(~Time) +
   scale_fill_brewer(palette = "Set3") +
   xlab("Community replicate") +
-  ylab("Species relative frequency")
+  ylab("Species proportion in community")
 
 Sp_plot
+
+#bar plot
+Sp_barplot <- ggplot(Commdata_seq, aes(x=Comm, y= Rel_freq), na.rm=T) +
+  geom_col(aes(fill=factor(Comm))) +
+  facet_wrap(~Sp + Time) + 
+  xlab("Community replicate") +
+  ylab("Species proportion in community") +
+  theme(axis.text.x = element_text(size=7))
+
+Sp_barplot
+
+#boxplot
+
+Sp_boxplot <- ggplot(Commdata_seq, aes(x=Sp, y=Rel_freq), na.rm=T) +
+  geom_boxplot() +
+  geom_point(position = position_jitter(0.2)) +
+  facet_wrap(~Time) +
+  xlab("Species") +
+  ylab("Species proportion in Community")
+
+Sp_boxplot
+
+#Community productivity over time
+
+prodplot <- ggplot(Comm_total_CFUs, aes(x=forcats::fct_reorder(Time, Comm), y= sum_cfu, group=Comm), na.rm=T) + 
+  geom_point(position = position_dodge(0.1), aes(colour=Comm)) +
+  geom_line(position = position_dodge(0.1), aes(colour=Comm)) +
+  scale_color_discrete("Comm") +
+  xlab("Time point") +
+  ylab("Community productivity (total CFU/mL)") +
+  scale_y_continuous(limits = c(0, 1.00e+09))
+
+prodplot
+#not particularly informative- set scale to remove weird outlier at T1 which squidged the other lines. 
+
+
